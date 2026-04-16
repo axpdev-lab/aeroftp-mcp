@@ -1,0 +1,134 @@
+{
+  "name": "aeroftp-mcp",
+  "displayName": "AeroFTP MCP Server",
+  "description": "Configure the AeroFTP MCP server for Claude Code. Access 16 file management tools across 28 protocols (FTP, SFTP, S3, WebDAV, Google Drive, Dropbox, OneDrive, and more) directly from your AI assistant.",
+  "version": "1.0.0",
+  "publisher": "axpdev-lab",
+  "license": "MIT",
+  "icon": "icons/icon-128.png",
+  "galleryBanner": {
+    "color": "#0f172a",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axpdev-lab/aeroftp-mcp"
+  },
+  "homepage": "https://aeroftp.app",
+  "bugs": {
+    "url": "https://github.com/axpdev-lab/aeroftp/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "mcp",
+    "claude",
+    "claude-code",
+    "aeroftp",
+    "ftp",
+    "sftp",
+    "s3",
+    "webdav",
+    "file-transfer",
+    "model-context-protocol",
+    "ai-tools",
+    "remote-files"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aeroftp-mcp.install",
+        "title": "Install MCP Server",
+        "category": "AeroFTP",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "aeroftp-mcp.remove",
+        "title": "Remove MCP Server",
+        "category": "AeroFTP",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "aeroftp-mcp.status",
+        "title": "MCP Server Status",
+        "category": "AeroFTP",
+        "icon": "$(info)"
+      },
+      {
+        "command": "aeroftp-mcp.diagnose",
+        "title": "Diagnose Installation",
+        "category": "AeroFTP",
+        "icon": "$(search)"
+      }
+    ],
+    "configuration": {
+      "title": "AeroFTP MCP",
+      "properties": {
+        "aeroftp-mcp.cliPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Absolute path to `aeroftp-cli` binary. Leave empty for automatic detection via PATH."
+        },
+        "aeroftp-mcp.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show AeroFTP MCP status in the status bar."
+        }
+      }
+    },
+    "walkthroughs": [
+      {
+        "id": "aeroftp-mcp.setup",
+        "title": "Set up AeroFTP MCP Server",
+        "description": "Connect Claude Code to your remote servers via AeroFTP",
+        "steps": [
+          {
+            "id": "install-cli",
+            "title": "Install AeroFTP CLI",
+            "description": "AeroFTP CLI must be installed on your system.\n\n**Linux (Snap)**\n```\nsudo snap install aeroftp\n```\n\n**Linux (AUR)**\n```\nyay -S aeroftp-bin\n```\n\n**Linux (deb/rpm/AppImage)**: Download from [GitHub Releases](https://github.com/axpdev-lab/aeroftp/releases)\n\n**macOS/Windows**: Download from [GitHub Releases](https://github.com/axpdev-lab/aeroftp/releases)\n\n[Verify installation](command:aeroftp-mcp.diagnose)",
+            "media": {
+              "markdown": "media/step-install.md"
+            }
+          },
+          {
+            "id": "configure-mcp",
+            "title": "Configure MCP Server",
+            "description": "Register the AeroFTP MCP server in Claude Code's configuration.\n\n[Install MCP Server](command:aeroftp-mcp.install)",
+            "media": {
+              "markdown": "media/step-configure.md"
+            }
+          },
+          {
+            "id": "verify",
+            "title": "Verify Setup",
+            "description": "Check that everything is working correctly.\n\n[Check Status](command:aeroftp-mcp.status)",
+            "media": {
+              "markdown": "media/step-verify.md"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}
