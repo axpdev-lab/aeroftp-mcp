@@ -1,7 +1,7 @@
 # AeroFTP MCP Server
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/axpdev-lab.aeroftp-mcp?label=VS%20Code%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.5.2-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
 Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **16 file management tools** across **28 protocols**.
@@ -138,4 +138,4 @@ FTP, FTPS, SFTP, WebDAV, S3 (+ Wasabi, Cloudflare R2, DigitalOcean Spaces, Backb
 
 ## License
 
-[MIT](LICENSE)
+[GPL-3.0](LICENSE)

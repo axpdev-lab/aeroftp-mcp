@@ -4,7 +4,7 @@
   "description": "Configure the AeroFTP MCP server for Claude Code. Access 16 file management tools across 28 protocols (FTP, SFTP, S3, WebDAV, Google Drive, Dropbox, OneDrive, and more) directly from your AI assistant.",
   "version": "1.0.0",
   "publisher": "axpdev-lab",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "icon": "icons/icon-128.png",
   "galleryBanner": {
     "color": "#0f172a",
