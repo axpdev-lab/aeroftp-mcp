@@ -33,6 +33,79 @@ interface CliInfo {
     version: string | null;
 }
 
+interface McpTarget {
+    id: string;
+    label: string;
+    description: string;
+    getConfigPath: () => string;
+    detect: () => boolean;
+}
+
+// ── MCP Targets ────────────────────────────────────────────────────────
+
+const MCP_TARGETS: McpTarget[] = [
+    {
+        id: 'claude-code',
+        label: 'Claude Code',
+        description: 'CLI and VS Code extension',
+        getConfigPath: () => path.join(os.homedir(), '.claude', '.mcp.json'),
+        detect: () => {
+            const dir = path.join(os.homedir(), '.claude');
+            return fs.existsSync(dir);
+        },
+    },
+    {
+        id: 'claude-desktop',
+        label: 'Claude Desktop',
+        description: process.platform === 'win32' ? 'Windows app' : process.platform === 'darwin' ? 'macOS app' : 'Desktop app',
+        getConfigPath: () => {
+            if (process.platform === 'win32') {
+                return path.join(process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming'), 'Claude', 'claude_desktop_config.json');
+            }
+            if (process.platform === 'darwin') {
+                return path.join(os.homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
+            }
+            return path.join(process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config'), 'Claude', 'claude_desktop_config.json');
+        },
+        detect: () => {
+            if (process.platform === 'win32') {
+                const dir = path.join(process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming'), 'Claude');
+                return fs.existsSync(dir);
+            }
+            if (process.platform === 'darwin') {
+                const dir = path.join(os.homedir(), 'Library', 'Application Support', 'Claude');
+                return fs.existsSync(dir);
+            }
+            const dir = path.join(process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config'), 'Claude');
+            return fs.existsSync(dir);
+        },
+    },
+    {
+        id: 'cursor',
+        label: 'Cursor',
+        description: 'AI-first code editor',
+        getConfigPath: () => path.join(os.homedir(), '.cursor', 'mcp.json'),
+        detect: () => {
+            const dir = path.join(os.homedir(), '.cursor');
+            return fs.existsSync(dir);
+        },
+    },
+    {
+        id: 'windsurf',
+        label: 'Windsurf',
+        description: 'Codeium IDE',
+        getConfigPath: () => path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json'),
+        detect: () => {
+            const dir = path.join(os.homedir(), '.codeium', 'windsurf');
+            return fs.existsSync(dir);
+        },
+    },
+];
+
+function getTargetById(id: string): McpTarget | undefined {
+    return MCP_TARGETS.find(t => t.id === id);
+}
+
 // ── Output Channel ─────────────────────────────────────────────────────
 
 let outputChannel: vscode.OutputChannel;
@@ -46,7 +119,7 @@ function log(message: string): void {
 
 let statusBarItem: vscode.StatusBarItem;
 
-function updateStatusBar(state: 'active' | 'inactive' | 'error' | 'no-cli'): void {
+function updateStatusBar(state: 'active' | 'partial' | 'inactive' | 'error' | 'no-cli'): void {
     const showStatusBar = vscode.workspace
         .getConfiguration(EXTENSION_ID)
         .get<boolean>('showStatusBar', true);
@@ -59,7 +132,12 @@ function updateStatusBar(state: 'active' | 'inactive' | 'error' | 'no-cli'): voi
     switch (state) {
         case 'active':
             statusBarItem.text = '$(check) AeroFTP MCP';
-            statusBarItem.tooltip = 'AeroFTP MCP server is configured for Claude Code';
+            statusBarItem.tooltip = 'AeroFTP MCP server is configured';
+            statusBarItem.backgroundColor = undefined;
+            break;
+        case 'partial':
+            statusBarItem.text = '$(check) AeroFTP MCP';
+            statusBarItem.tooltip = 'AeroFTP MCP server configured in some targets - click for details';
             statusBarItem.backgroundColor = undefined;
             break;
         case 'inactive':
@@ -82,15 +160,28 @@ function updateStatusBar(state: 'active' | 'inactive' | 'error' | 'no-cli'): voi
     statusBarItem.show();
 }
 
-// ── MCP Config ─────────────────────────────────────────────────────────
+function refreshStatusBar(): void {
+    const cli = getConfiguredCliPath();
+    const detected = MCP_TARGETS.filter(t => t.detect());
+    const installed = detected.filter(t => {
+        const { config, error } = readMcpConfigAt(t.getConfigPath());
+        return !error && isServerInstalled(config);
+    });
 
-function getMcpConfigPath(): string {
-    return path.join(os.homedir(), '.claude', '.mcp.json');
+    if (detected.length === 0 && !cli) {
+        updateStatusBar('no-cli');
+    } else if (installed.length > 0 && installed.length === detected.length) {
+        updateStatusBar('active');
+    } else if (installed.length > 0) {
+        updateStatusBar('partial');
+    } else {
+        updateStatusBar('inactive');
+    }
 }
 
-function readMcpConfig(): { config: McpConfig; error: string | null } {
-    const configPath = getMcpConfigPath();
+// ── MCP Config (generic) ──────────────────────────────────────────────
 
+function readMcpConfigAt(configPath: string): { config: McpConfig; error: string | null } {
     if (!fs.existsSync(configPath)) {
         return { config: {}, error: null };
     }
@@ -113,8 +204,7 @@ function readMcpConfig(): { config: McpConfig; error: string | null } {
     }
 }
 
-function writeMcpConfig(config: McpConfig): string | null {
-    const configPath = getMcpConfigPath();
+function writeMcpConfigAt(configPath: string, config: McpConfig): string | null {
     const dir = path.dirname(configPath);
 
     try {
@@ -237,6 +327,61 @@ function getInstallInstructions(): string {
     ].join('\n');
 }
 
+// ── Target Picker ──────────────────────────────────────────────────────
+
+interface TargetPickItem extends vscode.QuickPickItem {
+    target: McpTarget;
+}
+
+async function pickTargets(action: 'install' | 'remove'): Promise<McpTarget[] | null> {
+    const detected = MCP_TARGETS.filter(t => t.detect());
+    const allTargets = MCP_TARGETS;
+
+    const items: TargetPickItem[] = allTargets.map(t => {
+        const configPath = t.getConfigPath();
+        const { config, error } = readMcpConfigAt(configPath);
+        const installed = !error && isServerInstalled(config);
+        const exists = detected.includes(t);
+
+        let status: string;
+        if (!exists) {
+            status = 'not detected';
+        } else if (installed) {
+            status = 'configured';
+        } else {
+            status = 'not configured';
+        }
+
+        const shouldPick = action === 'install'
+            ? exists && !installed
+            : exists && installed;
+
+        return {
+            label: t.label,
+            description: `${t.description} - ${status}`,
+            detail: configPath,
+            picked: shouldPick,
+            target: t,
+        };
+    });
+
+    const selected = await vscode.window.showQuickPick(items, {
+        canPickMany: true,
+        title: action === 'install'
+            ? 'Select targets to install AeroFTP MCP server'
+            : 'Select targets to remove AeroFTP MCP server',
+        placeHolder: action === 'install'
+            ? 'Choose where to register the MCP server'
+            : 'Choose where to remove the MCP server',
+    });
+
+    if (!selected || selected.length === 0) {
+        return null;
+    }
+
+    return selected.map(s => s.target);
+}
+
 // ── Commands ───────────────────────────────────────────────────────────
 
 async function installMcpServer(): Promise<void> {
@@ -269,125 +414,136 @@ async function installMcpServer(): Promise<void> {
 
     log(`CLI found: ${cli.path} (${cli.version ?? 'unknown version'})`);
 
-    const { config, error } = readMcpConfig();
-    if (error) {
-        log(`Config error: ${error}`);
-        const action = await vscode.window.showErrorMessage(
-            `Cannot read MCP config: ${error}`,
-            'Open Config File',
-            'Overwrite Config',
-        );
-        if (action === 'Open Config File') {
-            const doc = await vscode.workspace.openTextDocument(getMcpConfigPath());
-            vscode.window.showTextDocument(doc);
-            return;
-        }
-        if (action !== 'Overwrite Config') {
-            return;
-        }
-    }
-
-    if (isServerInstalled(config)) {
-        const existing = config.mcpServers![MCP_SERVER_NAME];
-        const currentCmd = `${existing.command} ${(existing.args ?? []).join(' ')}`;
-        const newCmd = `${MCP_COMMAND} ${MCP_ARGS.join(' ')}`;
-        if (currentCmd === newCmd) {
-            vscode.window.showInformationMessage(
-                'AeroFTP MCP server is already configured. No changes needed.',
-            );
-            updateStatusBar('active');
-            return;
-        }
-        const overwrite = await vscode.window.showWarningMessage(
-            `AeroFTP MCP server is already configured with a different command: "${currentCmd}". Update to "${newCmd}"?`,
-            'Update',
-            'Cancel',
-        );
-        if (overwrite !== 'Update') {
-            return;
-        }
-    }
-
-    if (!config.mcpServers) {
-        config.mcpServers = {};
-    }
-
-    const cliCommand = getConfiguredCliPath() || MCP_COMMAND;
-    config.mcpServers[MCP_SERVER_NAME] = {
-        command: cliCommand,
-        args: MCP_ARGS,
-    };
-
-    const writeError = writeMcpConfig(config);
-    if (writeError) {
-        log(`Write error: ${writeError}`);
-        vscode.window.showErrorMessage(writeError);
-        updateStatusBar('error');
+    const targets = await pickTargets('install');
+    if (!targets) {
         return;
     }
 
-    const versionStr = cli.version ? ` v${cli.version}` : '';
-    log(`MCP server installed successfully${versionStr}`);
-    vscode.window.showInformationMessage(
-        `AeroFTP MCP server configured${versionStr}. Claude Code can now access 16 file management tools across 28 protocols.`,
-        'View Documentation',
-    ).then(action => {
-        if (action === 'View Documentation') {
-            vscode.env.openExternal(vscode.Uri.parse(DOCS_URL));
-        }
-    });
+    const cliCommand = getConfiguredCliPath() || MCP_COMMAND;
+    const results: { target: McpTarget; success: boolean; error?: string }[] = [];
 
-    updateStatusBar('active');
+    for (const target of targets) {
+        const configPath = target.getConfigPath();
+        const { config, error } = readMcpConfigAt(configPath);
+
+        if (error) {
+            log(`Config error for ${target.label}: ${error}`);
+            results.push({ target, success: false, error });
+            continue;
+        }
+
+        if (isServerInstalled(config)) {
+            const existing = config.mcpServers![MCP_SERVER_NAME];
+            const currentCmd = `${existing.command} ${(existing.args ?? []).join(' ')}`;
+            const newCmd = `${cliCommand} ${MCP_ARGS.join(' ')}`;
+            if (currentCmd === newCmd) {
+                results.push({ target, success: true });
+                continue;
+            }
+        }
+
+        if (!config.mcpServers) {
+            config.mcpServers = {};
+        }
+
+        config.mcpServers[MCP_SERVER_NAME] = {
+            command: cliCommand,
+            args: MCP_ARGS,
+        };
+
+        const writeError = writeMcpConfigAt(configPath, config);
+        if (writeError) {
+            log(`Write error for ${target.label}: ${writeError}`);
+            results.push({ target, success: false, error: writeError });
+        } else {
+            log(`MCP server installed for ${target.label}`);
+            results.push({ target, success: true });
+        }
+    }
+
+    const succeeded = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+
+    if (succeeded.length > 0) {
+        const names = succeeded.map(r => r.target.label).join(', ');
+        const versionStr = cli.version ? ` v${cli.version}` : '';
+        vscode.window.showInformationMessage(
+            `AeroFTP MCP server configured${versionStr} for: ${names}`,
+            'View Documentation',
+        ).then(action => {
+            if (action === 'View Documentation') {
+                vscode.env.openExternal(vscode.Uri.parse(DOCS_URL));
+            }
+        });
+    }
+
+    if (failed.length > 0) {
+        const names = failed.map(r => `${r.target.label}: ${r.error}`).join('; ');
+        vscode.window.showErrorMessage(`Failed for: ${names}`);
+    }
+
+    refreshStatusBar();
 }
 
 async function removeMcpServer(): Promise<void> {
     log('Remove command triggered');
 
-    const { config, error } = readMcpConfig();
-    if (error) {
-        vscode.window.showErrorMessage(`Cannot read MCP config: ${error}`);
+    const targets = await pickTargets('remove');
+    if (!targets) {
         return;
     }
 
-    if (!isServerInstalled(config)) {
-        vscode.window.showInformationMessage('AeroFTP MCP server is not configured. Nothing to remove.');
-        return;
-    }
-
+    const names = targets.map(t => t.label).join(', ');
     const confirm = await vscode.window.showWarningMessage(
-        'Remove AeroFTP MCP server from Claude Code configuration?',
-        { modal: true, detail: 'Claude Code will no longer have access to AeroFTP file management tools.' },
+        `Remove AeroFTP MCP server from: ${names}?`,
+        { modal: true, detail: 'The selected tools will no longer have access to AeroFTP file management tools.' },
         'Remove',
     );
     if (confirm !== 'Remove') {
         return;
     }
 
-    delete config.mcpServers![MCP_SERVER_NAME];
-    if (Object.keys(config.mcpServers!).length === 0) {
-        delete config.mcpServers;
+    const errors: string[] = [];
+
+    for (const target of targets) {
+        const configPath = target.getConfigPath();
+        const { config, error } = readMcpConfigAt(configPath);
+
+        if (error) {
+            errors.push(`${target.label}: ${error}`);
+            continue;
+        }
+
+        if (!isServerInstalled(config)) {
+            continue;
+        }
+
+        delete config.mcpServers![MCP_SERVER_NAME];
+        if (Object.keys(config.mcpServers!).length === 0) {
+            delete config.mcpServers;
+        }
+
+        const writeError = writeMcpConfigAt(configPath, config);
+        if (writeError) {
+            errors.push(`${target.label}: ${writeError}`);
+        } else {
+            log(`MCP server removed from ${target.label}`);
+        }
     }
 
-    const writeError = writeMcpConfig(config);
-    if (writeError) {
-        vscode.window.showErrorMessage(writeError);
-        updateStatusBar('error');
-        return;
+    if (errors.length > 0) {
+        vscode.window.showErrorMessage(`Errors: ${errors.join('; ')}`);
+    } else {
+        vscode.window.showInformationMessage(`AeroFTP MCP server removed from: ${names}`);
     }
 
-    log('MCP server removed');
-    vscode.window.showInformationMessage('AeroFTP MCP server removed from Claude Code configuration.');
-    updateStatusBar('inactive');
+    refreshStatusBar();
 }
 
 async function showStatus(): Promise<void> {
     log('Status command triggered');
 
     const cli = await findCli();
-    const { config, error } = readMcpConfig();
-    const installed = !error && isServerInstalled(config);
-    const configPath = getMcpConfigPath();
-    const configExists = fs.existsSync(configPath);
 
     outputChannel.clear();
     outputChannel.appendLine('=== AeroFTP MCP Server Status ===');
@@ -407,33 +563,56 @@ async function showStatus(): Promise<void> {
     }
     outputChannel.appendLine('');
 
-    // Config status
-    outputChannel.appendLine(`Config file:   ${configPath}`);
-    outputChannel.appendLine(`Config exists: ${configExists ? 'yes' : 'no'}`);
-    if (error) {
-        outputChannel.appendLine(`Config error:  ${error}`);
-    }
+    // Per-target status
+    outputChannel.appendLine('--- Targets ---');
     outputChannel.appendLine('');
 
-    // MCP status
-    outputChannel.appendLine(`MCP server:    ${installed ? 'CONFIGURED' : 'NOT CONFIGURED'}`);
-    if (installed) {
-        const serverConfig = config.mcpServers![MCP_SERVER_NAME];
-        outputChannel.appendLine(`  command:     ${serverConfig.command}`);
-        outputChannel.appendLine(`  args:        ${(serverConfig.args ?? []).join(' ')}`);
-    }
-    outputChannel.appendLine('');
+    let anyInstalled = false;
+    let anyDetected = false;
 
-    // Other MCP servers
-    if (config.mcpServers) {
-        const others = Object.keys(config.mcpServers).filter(k => k !== MCP_SERVER_NAME);
-        if (others.length > 0) {
-            outputChannel.appendLine(`Other MCP servers: ${others.join(', ')}`);
-            outputChannel.appendLine('');
+    for (const target of MCP_TARGETS) {
+        const detected = target.detect();
+        const configPath = target.getConfigPath();
+        const { config, error } = readMcpConfigAt(configPath);
+        const installed = !error && isServerInstalled(config);
+
+        if (detected) {
+            anyDetected = true;
         }
+        if (installed) {
+            anyInstalled = true;
+        }
+
+        const icon = installed ? '[OK]' : detected ? '[--]' : '[  ]';
+        const status = installed ? 'CONFIGURED' : detected ? 'NOT CONFIGURED' : 'NOT DETECTED';
+
+        outputChannel.appendLine(`${icon} ${target.label} (${target.description})`);
+        outputChannel.appendLine(`     Status: ${status}`);
+        outputChannel.appendLine(`     Config: ${configPath}`);
+
+        if (error) {
+            outputChannel.appendLine(`     Error:  ${error}`);
+        }
+
+        if (installed) {
+            const serverConfig = config.mcpServers![MCP_SERVER_NAME];
+            outputChannel.appendLine(`     Command: ${serverConfig.command} ${(serverConfig.args ?? []).join(' ')}`);
+        }
+
+        // Other MCP servers
+        if (config.mcpServers) {
+            const others = Object.keys(config.mcpServers).filter(k => k !== MCP_SERVER_NAME);
+            if (others.length > 0) {
+                outputChannel.appendLine(`     Other servers: ${others.join(', ')}`);
+            }
+        }
+
+        outputChannel.appendLine('');
     }
 
     // Platform
+    outputChannel.appendLine('--- System ---');
+    outputChannel.appendLine('');
     outputChannel.appendLine(`Platform:      ${process.platform} (${process.arch})`);
     outputChannel.appendLine(`VS Code:       ${vscode.version}`);
     outputChannel.appendLine('');
@@ -452,9 +631,9 @@ async function showStatus(): Promise<void> {
         } else if (action === 'Set CLI Path') {
             vscode.commands.executeCommand('workbench.action.openSettings', `${EXTENSION_ID}.cliPath`);
         }
-    } else if (!installed) {
+    } else if (anyDetected && !anyInstalled) {
         const action = await vscode.window.showInformationMessage(
-            'AeroFTP CLI detected but MCP server not configured.',
+            'AeroFTP CLI detected but MCP server not configured in any target.',
             'Install Now',
         );
         if (action === 'Install Now') {
@@ -504,54 +683,67 @@ async function diagnose(): Promise<void> {
     }
     outputChannel.appendLine('');
 
-    // Step 3: Config file
-    outputChannel.appendLine('3. Checking Claude Code config...');
-    const configPath = getMcpConfigPath();
-    const configDir = path.dirname(configPath);
+    // Step 3: Per-target checks
+    outputChannel.appendLine('3. Checking MCP targets...');
+    let step = 0;
+    for (const target of MCP_TARGETS) {
+        step++;
+        const detected = target.detect();
+        const configPath = target.getConfigPath();
 
-    if (!fs.existsSync(configDir)) {
-        outputChannel.appendLine(`   INFO: Directory ${configDir} does not exist (will be created on install)`);
-    } else {
-        outputChannel.appendLine(`   PASS: Config directory exists`);
-    }
+        outputChannel.appendLine(`   3.${step}. ${target.label}:`);
 
-    const { config, error } = readMcpConfig();
-    if (error) {
-        outputChannel.appendLine(`   FAIL: ${error}`);
-        outputChannel.appendLine('');
-        outputChannel.appendLine('   Fix: Open the file and correct the JSON syntax, or delete it to start fresh.');
-    } else if (isServerInstalled(config)) {
-        outputChannel.appendLine(`   PASS: AeroFTP MCP server is configured`);
-    } else {
-        outputChannel.appendLine('   INFO: AeroFTP MCP server not yet configured');
-    }
-    outputChannel.appendLine('');
+        if (!detected) {
+            outputChannel.appendLine(`        SKIP: Not detected on this system`);
+            outputChannel.appendLine(`        Path: ${configPath}`);
+            continue;
+        }
 
-    // Step 4: Write permissions
-    outputChannel.appendLine('4. Checking write permissions...');
-    try {
-        const testDir = fs.existsSync(configDir) ? configDir : os.homedir();
-        fs.accessSync(testDir, fs.constants.W_OK);
-        outputChannel.appendLine(`   PASS: Write access to ${testDir}`);
-    } catch {
-        outputChannel.appendLine(`   FAIL: No write access to ${configDir}`);
+        outputChannel.appendLine(`        PASS: Detected`);
+
+        const { config, error } = readMcpConfigAt(configPath);
+        if (error) {
+            outputChannel.appendLine(`        FAIL: ${error}`);
+            continue;
+        }
+
+        if (isServerInstalled(config)) {
+            outputChannel.appendLine(`        PASS: AeroFTP MCP server configured`);
+        } else {
+            outputChannel.appendLine(`        INFO: AeroFTP MCP server not yet configured`);
+        }
+
+        // Write permission check
+        const dir = path.dirname(configPath);
+        try {
+            const testDir = fs.existsSync(dir) ? dir : os.homedir();
+            fs.accessSync(testDir, fs.constants.W_OK);
+            outputChannel.appendLine(`        PASS: Write access OK`);
+        } catch {
+            outputChannel.appendLine(`        FAIL: No write access to ${dir}`);
+        }
     }
     outputChannel.appendLine('');
 
     // Summary
-    const allGood = cli && !error;
-    if (allGood && isServerInstalled(config)) {
-        outputChannel.appendLine('Result: All checks passed. AeroFTP MCP server is ready.');
-        updateStatusBar('active');
-    } else if (allGood) {
-        outputChannel.appendLine('Result: CLI found, ready to install. Run "AeroFTP: Install MCP Server".');
-        updateStatusBar('inactive');
+    const detected = MCP_TARGETS.filter(t => t.detect());
+    const installed = detected.filter(t => {
+        const { config, error } = readMcpConfigAt(t.getConfigPath());
+        return !error && isServerInstalled(config);
+    });
+
+    if (installed.length === detected.length && detected.length > 0) {
+        outputChannel.appendLine(`Result: All ${installed.length} detected target(s) configured.`);
+    } else if (installed.length > 0) {
+        outputChannel.appendLine(`Result: ${installed.length}/${detected.length} target(s) configured.`);
+    } else if (detected.length > 0) {
+        outputChannel.appendLine('Result: CLI found but no targets configured. Run "AeroFTP: Install MCP Server".');
     } else {
-        outputChannel.appendLine('Result: Issues found. See details above.');
-        updateStatusBar(cli ? 'error' : 'no-cli');
+        outputChannel.appendLine('Result: No MCP-compatible tools detected on this system.');
     }
 
     outputChannel.show();
+    refreshStatusBar();
 }
 
 // ── First Run ──────────────────────────────────────────────────────────
@@ -559,34 +751,36 @@ async function diagnose(): Promise<void> {
 async function checkFirstRun(context: vscode.ExtensionContext): Promise<void> {
     const hasPrompted = context.globalState.get<boolean>(`${EXTENSION_ID}.prompted`);
     if (hasPrompted) {
-        const { config, error } = readMcpConfig();
-        if (!error && isServerInstalled(config)) {
-            updateStatusBar('active');
-        } else {
-            const cli = await findCli();
-            updateStatusBar(cli ? 'inactive' : 'no-cli');
-        }
+        refreshStatusBar();
         return;
     }
 
-    const { config } = readMcpConfig();
-    if (isServerInstalled(config)) {
+    // Check if already installed in any target
+    const anyInstalled = MCP_TARGETS.some(t => {
+        const { config, error } = readMcpConfigAt(t.getConfigPath());
+        return !error && isServerInstalled(config);
+    });
+
+    if (anyInstalled) {
         await context.globalState.update(`${EXTENSION_ID}.prompted`, true);
-        updateStatusBar('active');
+        refreshStatusBar();
         return;
     }
 
     const cli = await findCli();
     if (!cli) {
-        updateStatusBar('no-cli');
+        refreshStatusBar();
         return;
     }
 
-    updateStatusBar('inactive');
+    refreshStatusBar();
 
+    const detected = MCP_TARGETS.filter(t => t.detect());
+    const targetNames = detected.map(t => t.label).join(', ');
     const versionStr = cli.version ? ` (v${cli.version})` : '';
+
     const result = await vscode.window.showInformationMessage(
-        `AeroFTP CLI detected${versionStr}. Configure the MCP server so Claude Code can manage files across 28 protocols?`,
+        `AeroFTP CLI detected${versionStr}. Configure the MCP server for ${targetNames || 'available tools'}?`,
         'Install MCP Server',
         'Not Now',
         'Never Ask Again',
@@ -620,7 +814,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand(`${EXTENSION_ID}.diagnose`, diagnose),
         vscode.workspace.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration(`${EXTENSION_ID}.showStatusBar`)) {
-                checkFirstRun(context);
+                refreshStatusBar();
             }
         }),
     );

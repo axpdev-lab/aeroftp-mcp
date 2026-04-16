@@ -4,14 +4,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.5.2-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
-Configure the [AeroFTP](https://aeroftp.app) MCP server for [Claude Code](https://claude.ai/claude-code) with one click. Gives your AI assistant access to **16 file management tools** across **28 protocols**.
+Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **16 file management tools** across **28 protocols**.
 
 ## Features
 
-- **One-click setup** - Registers the MCP server in Claude Code's configuration
+- **Multi-target** - Install for Claude Code, Claude Desktop, Cursor, and Windsurf simultaneously
+- **Auto-detection** - Only shows targets that are installed on your system
 - **Safe merge** - Preserves existing MCP servers in your config
 - **Status bar indicator** - Always know if the MCP server is active
-- **Diagnostics** - 4-step health check to troubleshoot issues
+- **Diagnostics** - Health check across all detected targets
 - **Cross-platform** - Linux, macOS, Windows
 - **Getting Started walkthrough** - Guided setup in 3 steps
 
@@ -45,10 +46,10 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 | Command | Description |
 |---------|-------------|
-| `AeroFTP: Install MCP Server` | Register the MCP server in Claude Code |
-| `AeroFTP: Remove MCP Server` | Remove the MCP server from Claude Code |
-| `AeroFTP: MCP Server Status` | Show configuration details in output panel |
-| `AeroFTP: Diagnose Installation` | Run 4-step health check |
+| `AeroFTP: Install MCP Server` | Register the MCP server (multi-target picker) |
+| `AeroFTP: Remove MCP Server` | Remove the MCP server from selected targets |
+| `AeroFTP: MCP Server Status` | Show per-target configuration details |
+| `AeroFTP: Diagnose Installation` | Run health check across all targets |
 
 ### Settings
 
@@ -57,9 +58,17 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 | `aeroftp-mcp.cliPath` | `""` | Absolute path to `aeroftp-cli` (empty = auto-detect) |
 | `aeroftp-mcp.showStatusBar` | `true` | Show status indicator in the status bar |
 
-## What Gets Configured
+## Supported Targets
 
-The extension writes a single entry to `~/.claude/.mcp.json`:
+| Target | Config path |
+|--------|------------|
+| **Claude Code** | `~/.claude/.mcp.json` |
+| **Claude Desktop** (Windows) | `%APPDATA%\Claude\claude_desktop_config.json` |
+| **Claude Desktop** (macOS) | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| **Cursor** | `~/.cursor/mcp.json` |
+| **Windsurf** | `~/.codeium/windsurf/mcp_config.json` |
+
+The extension auto-detects which targets are installed and only shows those in the picker. Each target receives the same entry:
 
 ```json
 {
@@ -72,11 +81,11 @@ The extension writes a single entry to `~/.claude/.mcp.json`:
 }
 ```
 
-No other entries are modified. The MCP server communicates via JSON-RPC over stdio.
+Existing MCP servers in each config file are preserved. The MCP server communicates via JSON-RPC over stdio.
 
 ## Available MCP Tools
 
-Once configured, Claude Code gains access to 16 tools:
+Once configured, your AI assistant gains access to 16 tools:
 
 ### Safe (read-only)
 
