@@ -2,6 +2,23 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.2] - 2026-04-17
+
+### Fixed
+
+- **README Marketplace badge**: the retired `shields.io/visual-studio-marketplace` endpoint returned the literal text "retired badge" next to the label. Switched to `vsmarketplacebadges.dev` so the badge now shows the real published version.
+- **AeroFTP version badge**: bumped from `v3.5.2` to `v3.5.4+` to reflect the minimum CLI version required for the `aeroftp mcp` subcommand to work.
+
+### Required CLI
+
+The extension registers `aeroftp-cli mcp` as the MCP server command. This subcommand was added in **AeroFTP v3.5.4**. Earlier versions will fail at startup with "unrecognized subcommand 'mcp'". Run `aeroftp --version` to confirm, and upgrade AeroFTP first if needed.
+
+## [1.0.1] - 2026-04-16
+
+### Changed
+
+- License: MIT → GPL-3.0 (aligned with AeroFTP upstream).
+
 ## [1.0.0] - 2026-04-16
 
 ### Added

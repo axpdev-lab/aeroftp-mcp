@@ -1,8 +1,8 @@
 {
   "name": "aeroftp-mcp",
   "displayName": "AeroFTP MCP Server",
-  "description": "Configure the AeroFTP MCP server for Claude Code. Access 16 file management tools across 28 protocols (FTP, SFTP, S3, WebDAV, Google Drive, Dropbox, OneDrive, and more) directly from your AI assistant.",
-  "version": "1.0.1",
+  "description": "Configure the AeroFTP MCP server for Claude Code, Claude Desktop, Cursor, and Windsurf. Access 16 file management tools across 22 storage protocols (FTP, SFTP, S3, WebDAV, Google Drive, Dropbox, OneDrive, and more) directly from your AI assistant. Requires AeroFTP CLI v3.5.4 or later.",
+  "version": "1.0.2",
   "publisher": "axpdev-lab",
   "license": "GPL-3.0",
   "icon": "icons/icon-128.png",
