@@ -7,3 +7,7 @@ tsconfig.json
 **/*.d.ts
 **/*.d.ts.map
 *.vsix
+.env
+.env.*
+.env.publish
+aeroftp-mcp-*.vsix
