@@ -2,9 +2,9 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.5.4%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.5.5%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
-Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **16 file management tools** across **28 protocols**.
+Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **19 file management tools** across **28 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
 ## Features
 
