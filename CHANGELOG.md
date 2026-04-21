@@ -2,6 +2,25 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.4] - 2026-04-21
+
+### AeroFTP CLI requirement bumped to v3.5.8+
+
+The AeroFTP MCP server now exposes **20 tools** (up from 19) with significantly improved agent ergonomics. This extension is a thin registration wrapper — no code changes; the new capabilities arrive automatically as soon as the CLI is updated. Bump `aeroftp-cli` to v3.5.8 or later (v3.5.9 recommended for CLI-side parity).
+
+### New MCP capabilities available via this extension
+
+- **`aeroftp_delete_many`**: batch delete of up to 100 remote paths with configurable inter-delete backoff (`delay_ms`, default 200 ms, cap 2 000 ms). `recursive` and `continue_on_error` round out the surface; response carries per-item result + aggregate summary.
+- **`aeroftp_list_servers` filtering**: optional `name_contains`, `protocol`, `limit` (default 200, cap 1 000), and `offset` arguments so agents can work against vaults with many profiles without paying a full-list parse on every invocation.
+- **`aeroftp_read_file` preview window**: new `preview_kb` argument (default 5, hard cap 1 024). The too-large error message now tells the caller the window used and the cap so they can raise it or switch to `aeroftp_download_file`.
+- **`aeroftp_upload_file` auto-mkdir**: new `create_parents` boolean. When true, the tool recursively mkdirs every missing parent of the destination idempotently.
+- **`aeroftp_sync_tree` dry-run plan**: the dry-run response now includes a `plan[]` array (`{op, path, reason, bytes}`) plus a `planned.{uploaded, downloaded, deleted, skipped}` counter block, eliminating the need to shell out to `aeroftp-cli sync --dry-run -v` for agent-driven planning.
+- **`aeroftp_check_tree` two-sided checksum**: with `checksum=true`, the tool now requests the remote checksum via `provider.checksum()` when supported, picks SHA-256 → SHA-1 → MD5, and compares algo-for-algo. Cross-algorithm mismatches safely fall back to size-only. New `compare_method: "checksum" | "size"` field on each diff entry plus a top-level `checksum_remote_supported` flag.
+
+### Reliability
+
+- **Connection pool auto-reset on transport failure**: pool entries are now invalidated (fire-and-forget disconnect) when a tool call fails with a transport-level error (`NotConnected`, `Timeout`, `NetworkError`, message patterns like *"Data connection is already open"*, *"broken pipe"*, *"connection reset"*). Short operations transparently retry once on a fresh connection. `aeroftp_close_connection` is no longer required after a failed FTP upload.
+
 ## [1.0.3] - 2026-04-19
 
 ### AeroFTP CLI requirement bumped to v3.5.5+
