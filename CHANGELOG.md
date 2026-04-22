@@ -2,6 +2,18 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.5] - 2026-04-22
+
+### AeroFTP CLI requirement bumped to v3.6.0+
+
+This extension is a thin registration wrapper — no code changes; the new capabilities below arrive automatically once the CLI is updated. Bump `aeroftp-cli` to v3.6.0 or later.
+
+### New MCP capabilities available via this extension
+
+- **`aeroftp_sync_tree` per-file delta breakdown**: the response (dry-run and apply) now carries `summary.delta_files[]`, an array of `{path, bytes_sent, total_size, speedup}` entries for every file serviced by the optimized rsync-over-SSH transfer path. The array is capped at 500 entries; when a run crosses the cap, `summary.delta_files_truncated: true` flags the truncation. The aggregate counters in `summary.delta_savings` keep counting past the cap, so top-line savings stay accurate even on very large trees. Both keys are omitted on runs where no file used the optimized path, preserving the absence-vs-null contract with the existing `delta_savings` block.
+- **`aeroftp_read_file` soft-truncate inside the hard cap**: files that exceed the requested `preview_kb` window but sit below the 1 MB hard cap now return a truncated content payload with `truncated: true` instead of surfacing a hard error. The validator still rejects requests beyond the 1 MB hard cap. This eliminates the forced retry loop agents used to hit when they encountered a file slightly over the preview window they asked for.
+- **`aeroftp_check_tree` exposes `compare_method` on the match group too**: previously only the `differ`, `missing_local`, and `missing_remote` groups carried the `compare_method: "checksum" | "size"` flag. The `groups.match` array now carries the same flag on every entry, so agents can tell whether a match was cryptographically verified via server-side checksum or fell back to size-only matching (typical on FTP where no checksum primitive exists).
+
 ## [1.0.4] - 2026-04-21
 
 ### AeroFTP CLI requirement bumped to v3.5.8+
