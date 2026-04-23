@@ -2,6 +2,17 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.6] - 2026-04-24
+
+### Fixed
+
+- **Windows: CLI resolver no longer stuck on PATH**. The AeroFTP Windows installer drops `aeroftp-cli.exe` in `%LOCALAPPDATA%\AeroFTP\` but does not register that directory in the user `Path` environment variable. The extension's `findCli()` relied solely on PATH lookup (`where aeroftp-cli`), so VS Code reported "aeroftp-cli not found" even when the CLI was properly installed and working on the same machine. `findCli()` now falls back to a per-OS list of canonical install locations after the PATH lookup fails:
+  - Windows: `%LOCALAPPDATA%\AeroFTP\aeroftp-cli.exe`, `%ProgramFiles%\AeroFTP\aeroftp-cli.exe`, `%ProgramFiles(x86)%\AeroFTP\aeroftp-cli.exe`
+  - Linux: `/snap/bin/aeroftp-cli`, `/usr/local/bin/aeroftp-cli`, `/usr/bin/aeroftp-cli`, `~/.local/bin/aeroftp-cli`
+  - macOS: `/Applications/AeroFTP.app/Contents/MacOS/aeroftp-cli`, `/usr/local/bin/aeroftp-cli`, `/opt/homebrew/bin/aeroftp-cli`
+
+  Existing users can upgrade the extension and the CLI gets discovered on first retry — no AeroFTP reinstall, no manual `cliPath` setting, no shell restart required. The `aeroftp.cliPath` override still wins when set, and the Install Guide / "Set CLI Path" flow still triggers only when every resolution step fails.
+
 ## [1.0.5] - 2026-04-22
 
 ### AeroFTP CLI requirement bumped to v3.6.0+

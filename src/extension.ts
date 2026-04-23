@@ -249,17 +249,73 @@ async function findCli(): Promise<CliInfo | null> {
         return null;
     }
 
+    // Step 1 — PATH lookup (covers the happy path on every OS that added
+    // the binary to PATH, e.g. snap on Linux, or a user who already set
+    // the install dir manually on Windows).
     const which = process.platform === 'win32' ? 'where' : 'which';
     try {
         const { stdout } = await execFileAsync(which, [MCP_COMMAND], { timeout: 5000 });
         const cliPath = stdout.trim().split('\n')[0].trim();
-        if (!cliPath) {
-            return null;
+        if (cliPath && fs.existsSync(cliPath)) {
+            const version = await getCliVersion(cliPath);
+            return { path: cliPath, version };
         }
-        const version = await getCliVersion(cliPath);
-        return { path: cliPath, version };
     } catch {
-        return null;
+        // Fall through to canonical path probing.
+    }
+
+    // Step 2 — Canonical per-OS fallback. The Windows Tauri installer
+    // drops binaries in %LOCALAPPDATA%\AeroFTP\ but does not register the
+    // directory in the user Path env var, so spawn('aeroftp-cli') cannot
+    // find it. This fallback unblocks VS Code even when the user has not
+    // (yet) extended PATH themselves. Same reasoning for the macOS .app
+    // bundle and for Linux when the binary landed outside /snap/bin.
+    for (const candidate of canonicalCliPaths()) {
+        if (fs.existsSync(candidate)) {
+            const version = await getCliVersion(candidate);
+            if (version) {
+                log(`CLI resolved via canonical fallback: ${candidate}`);
+                return { path: candidate, version };
+            }
+        }
+    }
+
+    return null;
+}
+
+function canonicalCliPaths(): string[] {
+    const bin = process.platform === 'win32' ? 'aeroftp-cli.exe' : 'aeroftp-cli';
+    switch (process.platform) {
+        case 'win32': {
+            const paths: string[] = [];
+            if (process.env.LOCALAPPDATA) {
+                paths.push(path.join(process.env.LOCALAPPDATA, 'AeroFTP', bin));
+            }
+            if (process.env.ProgramFiles) {
+                paths.push(path.join(process.env.ProgramFiles, 'AeroFTP', bin));
+            }
+            if (process.env['ProgramFiles(x86)']) {
+                paths.push(path.join(process.env['ProgramFiles(x86)'] as string, 'AeroFTP', bin));
+            }
+            return paths;
+        }
+        case 'linux': {
+            const home = process.env.HOME || '';
+            return [
+                '/snap/bin/aeroftp-cli',
+                '/usr/local/bin/aeroftp-cli',
+                '/usr/bin/aeroftp-cli',
+                home ? path.join(home, '.local/bin/aeroftp-cli') : '',
+            ].filter(Boolean);
+        }
+        case 'darwin':
+            return [
+                '/Applications/AeroFTP.app/Contents/MacOS/aeroftp-cli',
+                '/usr/local/bin/aeroftp-cli',
+                '/opt/homebrew/bin/aeroftp-cli',
+            ];
+        default:
+            return [];
     }
 }
 
