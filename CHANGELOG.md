@@ -2,6 +2,29 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.7] - 2026-05-01
+
+### AeroFTP CLI requirement bumped to v3.7.0+
+
+This extension is a thin registration wrapper — no source changes; the new capabilities below arrive automatically once the CLI is updated. Bump `aeroftp-cli` to v3.7.0 or later. Tool count: **39** (up from 20 advertised by 1.0.6 — the gap reflects wave-5 cross-profile transfer and wave-6 ops tools that landed in the CLI binary alongside the v3.7.0 desktop release).
+
+### New MCP capabilities available via this extension
+
+- **`aeroftp_transfer` / `aeroftp_transfer_tree`** (wave-5, with `remote_*` aliases): cross-profile transfer between two saved profiles — single-file or recursive directory copy with `summary_only` mode and configurable `max_files` cap (default 1 000, hard cap 10 000). Source and destination provider opened once and reused across the whole batch (so a 1 000-file tree pays exactly two TCP/SSH sessions). Path validation rejects null bytes, `..` traversal, leading `-`, empty paths and >4 096 chars on both `src_path` and `dst_path`. Identical src/dst profiles refused by id and by canonical name (case-insensitive). Audit log includes profile ids, paths, bytes, and duration; credentials never leave the Rust temp-provider factory. Progress streaming on `transfer_tree` throttled at every ~5 files or 2 % delta.
+- **`aeroftp_check_tree` per-group caps** (wave-6, Gap 4): `max_match`, `max_differ`, `max_missing_local`, `max_missing_remote` each fall back to `max_entries_reported`, so existing callers see no behavior change. New `omit_match` drops the noise bucket entirely from `groups` (counter still reported in `summary`) — agents can ask for "20 sample matches plus every diff" without tripping the response size cap.
+- **`aeroftp_touch`** (wave-6 ops): create an empty file at a remote path, or report the file already exists. No portable utime API on top of `RemoteBackend`, so existing files come back with `action: "exists"` rather than mtime bumped.
+- **`aeroftp_cleanup`** (wave-6 ops): BFS scan for orphan `.aerotmp` partial-transfer files. `dry_run: true` by default; deletes only when explicitly asked. Caps at 100 k entries / depth 100.
+- **`aeroftp_speed`** (wave-6 ops): agent-grade throughput probe — random payload upload + download + SHA-256 integrity check + cleanup. Caps tighter than the CLI: 4 MiB default / 64 MiB max, iterations 1..3.
+- **`aeroftp_sync_doctor`** (wave-6 ops): preflight risk summary with file/byte counts, human-readable risk strings, and a `suggested_next_command`. Lighter-weight than `sync_tree` `dry_run: true`.
+- **`aeroftp_dedupe`** (wave-6 ops): SHA-256 duplicate detection grouped per size, modes `newest` / `oldest` / `largest` / `smallest` / `list`. Caps 100 k file scan / 256 MiB per file. `dry_run: true` by default.
+- **`aeroftp_reconcile`** (wave-6 ops): categorized diff variant of `check_tree` with `elapsed_secs` and `suggested_next_command`. Compare via size only — no checksum-aware compare (limitation documented in the schema), since `RemoteBackend` doesn't expose `supports_checksum` and we don't want to download every file twice. For checksum-aware diffs use `aeroftp_check_tree` with `checksum: true`.
+
+Each new tool ships with a matching `remote_*` alias for callers that prefer the cross-profile naming convention.
+
+### Required CLI
+
+The new wave-5 / wave-6 tools require **AeroFTP CLI v3.7.0 or later**. Upgrade your AeroFTP install (`aeroftp-cli --version` to verify) before pinning this extension.
+
 ## [1.0.6] - 2026-04-24
 
 ### Fixed
