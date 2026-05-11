@@ -2,9 +2,9 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.7.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.7.9%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
-Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **39 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
+Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **42 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
 ## Features
 
@@ -85,7 +85,7 @@ Existing MCP servers in each config file are preserved. The MCP server communica
 
 ## Available MCP Tools
 
-Once configured, your AI assistant gains access to 39 tools (each ships with a matching `remote_*` alias for cross-profile callers).
+Once configured, your AI assistant gains access to 42 tools (each ships with a matching `remote_*` alias for cross-profile callers).
 
 ### Safe (read-only)
 

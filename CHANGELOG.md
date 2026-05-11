@@ -2,6 +2,24 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.8] - 2026-05-11
+
+### AeroFTP CLI requirement bumped to v3.7.9+
+
+This extension is a thin registration wrapper, no source changes; the new capabilities below arrive automatically once the CLI is updated. Bump `aeroftp-cli` to v3.7.9 or later. Tool count: **42** (up from 39 advertised by 1.0.7).
+
+### New MCP capabilities available via this extension
+
+- **`aeroftp_debug_snapshot`** (debug-surface): returns a live JSON snapshot of vault state, open sessions, scheduler, connection pool, watcher health, and the DebugPanel ring buffer (with redaction already applied). Lets an agent inspect its own state without round-tripping a question back to the user.
+- **`aeroftp_debug_run_test`** (debug-surface): triggers one backend probe by id (vault status, keystore reachability, provider auth, FS read/write, network reachability, plugin script integrity) and returns a typed PASS or FAIL result with structured diagnostics. Same probes the user runs from the DebugPanel Tests tab.
+- **`aeroftp_benchmark`** (debug-surface): runs the throughput benchmarks the user would launch from the DebugPanel Tests tab (UI render budget, IPC roundtrip latency). Returns the same structured result the panel displays, so an agent can compare measured against expected without asking the user to read a chart.
+
+All three tools are read-only and safe by default. They are the same surface a maintainer asks for in an issue thread (vault status, network probe, IPC latency), now reachable by the agent directly. Companion AeroFTP `v3.7.9` release elevates the DebugPanel to a real diagnostic surface under `Ctrl+Shift+M` in every theme, so user-side and agent-side share the same buffer and the same redaction pipeline.
+
+### Required CLI
+
+The new debug-surface tools require **AeroFTP CLI v3.7.9 or later**. Upgrade your AeroFTP install (`aeroftp-cli --version` to verify) before pinning this extension.
+
 ## [1.0.7] - 2026-05-01
 
 ### AeroFTP CLI requirement bumped to v3.7.0+
