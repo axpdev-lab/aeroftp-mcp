@@ -2,7 +2,7 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.7.9%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.8.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
 Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **42 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
@@ -99,7 +99,7 @@ Once configured, your AI assistant gains access to 42 tools (each ships with a m
 | `file_info` | File or directory metadata (size, mtime, permissions, hash) |
 | `file_versions` | List historical versions where the protocol supports them |
 | `search_files` | Recursive name search with extension/glob filters |
-| `storage_quota` | Storage quota info |
+| `storage_quota` | Storage quota info; optional `scan`/`full`/`path` to compute a real used figure on no-quota backends (bounded recursive scan, mirrors CLI `df --scan`) |
 | `head_file` / `tail_file` | First/last N lines of a remote text file |
 | `tree` | Recursive directory tree (depth-capped) |
 | `hashsum` | Server-side checksum (SHA-256 / SHA-1 / MD5 with provider fallback) |

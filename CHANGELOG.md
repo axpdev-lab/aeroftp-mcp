@@ -2,6 +2,20 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.0.9] - 2026-05-15
+
+### AeroFTP CLI requirement bumped to v3.8.0+
+
+Thin registration wrapper, no source changes; the capability below arrives automatically once the CLI is updated. Bump `aeroftp-cli` to v3.8.0 or later. Tool count unchanged: **42** (one existing tool enriched, no new tool).
+
+### New MCP capability available via this extension
+
+- **`aeroftp_storage_quota` / `remote_storage_quota` gain `scan` / `full` / `path` arguments**: by default the tool still returns the provider's reported quota in one API call. With `scan: true` the handler runs a bounded recursive walk (depth 100, 500k entries, `scan_truncated: true` when a cap is hit, symlinks skipped) and sums file sizes, so an agent gets a real `used` figure on backends with no quota API (raw FTP/FTPS, most S3/WebDAV). `full: true` scans from the account root; `path` scans a specific subtree (default `/`). Mirrors the CLI `aeroftp df --scan` semantics through the unified dispatcher. The legacy non-scan response now also carries `scanned: false`; existing callers are unaffected (only `server` is required).
+
+### Required CLI
+
+AeroFTP CLI **v3.8.0** or later (the scan path ships in the v3.8.0 backend).
+
 ## [1.0.8] - 2026-05-11
 
 ### AeroFTP CLI requirement bumped to v3.7.9+
