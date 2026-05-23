@@ -6,6 +6,8 @@
 
 Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **42 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
+Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, provider-agnostic DAG scheduler that picks the right transfer shape per call from the provider's capabilities — native multipart upload fan-out on S3 / B2, server-side copy on every backend that supports it, and intra-file segmented downloads when the server proves it honours HTTP `Range`. The MCP tool surface is unchanged (same names, same arguments, same notifications); progress events are now sourced from the engine's per-node lifecycle. See the [architecture page](https://docs.aeroftp.app/architecture/dag-transfer-engine) for details.
+
 ## Features
 
 - **Multi-target** - Install for Claude Code, Claude Desktop, Cursor, and Windsurf simultaneously
