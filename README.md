@@ -2,11 +2,11 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v3.8.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.0.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
 Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **42 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
-Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, provider-agnostic DAG scheduler that picks the right transfer shape per call from the provider's capabilities — native multipart upload fan-out on S3 / B2, server-side copy on every backend that supports it, and intra-file segmented downloads when the server proves it honours HTTP `Range`. The MCP tool surface is unchanged (same names, same arguments, same notifications); progress events are now sourced from the engine's per-node lifecycle. See the [architecture page](https://docs.aeroftp.app/architecture/dag-transfer-engine) for details.
+Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, provider-agnostic DAG scheduler that picks the right transfer shape per call from the provider's capabilities: native multipart upload fan-out on S3 / B2, server-side copy on every backend that supports it, and intra-file segmented downloads when the server proves it honours HTTP `Range`. The MCP tool surface is unchanged (same names, same arguments, same notifications); progress events are now sourced from the engine's per-node lifecycle. See the [architecture page](https://docs.aeroftp.app/architecture/dag-transfer-engine) for details.
 
 ## Features
 

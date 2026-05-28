@@ -2,6 +2,21 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.1.0] - 2026-05-28
+
+### AeroFTP CLI requirement bumped to v4.0.0+
+
+Thin registration wrapper, no source changes. The MCP tool surface is unchanged: same 42 tools, same names, same arguments, same notifications. This release aligns the extension metadata with AeroFTP v4.0.0.
+
+### What changed in AeroFTP v4.0.0 (under the hood)
+
+- **Shared DAG transfer engine** is now the single production path for every transfer surface. The engine picks the right shape per call from each provider's capabilities: native multipart upload fan-out on S3 / B2 (and 17 other backends), server-side copy on every backend that advertises it, and intra-file segmented downloads when the server honours HTTP `Range`. Progress events the MCP server emits are now sourced from the engine's per-node lifecycle; downstream consumers see the same JSON shape and event cadence as before.
+- **Multi-User Account Partition** in the desktop app and CLI. The MCP server is unaffected: it operates on the active user's partition through the same vault the CLI uses.
+
+### Required CLI
+
+- AeroFTP CLI **v4.0.0 or later**. Install via Snap (`sudo snap install aeroftp`), AUR (`yay -S aeroftp-bin`), or the GitHub Releases page.
+
 ## [1.0.9] - 2026-05-15
 
 ### AeroFTP CLI requirement bumped to v3.8.0+
