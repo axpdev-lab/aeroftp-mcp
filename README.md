@@ -93,7 +93,7 @@ Once configured, your AI assistant gains access to 42 tools (each ships with a m
 
 | Tool | Description |
 |------|-------------|
-| `list_servers` | List saved server profiles (filters: `name_contains`, `protocol`, `limit`, `offset`) |
+| `list_servers` | List saved server profiles, lean identity fields by default (filters: `name_contains`, `protocol`, `limit`, `offset`; pass `include_capabilities` to embed the transfer-capabilities block) |
 | `mcp_info` | Server capabilities, version, supported protocols |
 | `server_info` / `agent_connect` | Connect and return metadata in one call |
 | `list_files` | List a directory (filters: glob, name_contains, recursive, limit) |
