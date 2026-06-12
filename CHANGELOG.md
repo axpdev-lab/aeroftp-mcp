@@ -2,6 +2,20 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.3.0] - 2026-06-16
+
+### Adds error-correction tools (.aerocorrect sidecars)
+
+Thin registration wrapper, no source changes. The MCP tool surface gains three error-correction tools that the AeroFTP CLI now exposes:
+
+- **`aeroftp_correct_gen`**: generate a detached `.aerocorrect` Reed-Solomon recovery sidecar for a local file (par2-style, content-SHA bound, self-healing v2 format). Overhead `level` is 5-50 (default 15: low ~7, medium ~15, quartile ~25, high ~30).
+- **`aeroftp_correct_verify`**: verify a local file against its sidecar (read-only, never mutates the file).
+- **`aeroftp_correct_repair`**: repair a corrupted local file in place from its sidecar. Atomic and all-or-nothing: the rebuilt bytes are re-verified against the bound content hash before the original is replaced, so a bad or foreign sidecar can only fail, never corrupt good data.
+
+These three operate on local files and have no `remote_*` alias. Tool count 42 -> 45.
+
+Requires AeroFTP CLI v4.0.5 or later (the release that ships the `.aerocorrect` MCP tools).
+
 ## [1.2.0] - 2026-06-04
 
 ### Aligns with AeroFTP CLI v4.0.2 (agent-facing surface refinements)

@@ -2,9 +2,9 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.0.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.0.5%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
-Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **42 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
+Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **45 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
 Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, provider-agnostic DAG scheduler that picks the right transfer shape per call from the provider's capabilities: native multipart upload fan-out on S3 / B2, server-side copy on every backend that supports it, and intra-file segmented downloads when the server proves it honours HTTP `Range`. The MCP tool surface is unchanged (same names, same arguments, same notifications); progress events are now sourced from the engine's per-node lifecycle. See the [architecture page](https://docs.aeroftp.app/architecture/dag-transfer-engine) for details.
 
@@ -87,7 +87,7 @@ Existing MCP servers in each config file are preserved. The MCP server communica
 
 ## Available MCP Tools
 
-Once configured, your AI assistant gains access to 42 tools (each ships with a matching `remote_*` alias for cross-profile callers).
+Once configured, your AI assistant gains access to 45 tools. The remote file and transfer tools each ship with a matching `remote_*` alias for cross-profile callers; the three `correct_*` error-correction tools operate on local files and have no alias.
 
 ### Safe (read-only)
 
@@ -131,6 +131,14 @@ Once configured, your AI assistant gains access to 42 tools (each ships with a m
 | `delete` | Delete a single remote file or directory |
 | `delete_many` | Batch delete (caps + configurable backoff) |
 | `cleanup` | Sweep orphan `.aerotmp` files (dry-run by default) |
+
+### Error correction (local `.aerocorrect` sidecars)
+
+| Tool | Description |
+|------|-------------|
+| `correct_gen` | Generate a detached `.aerocorrect` Reed-Solomon recovery sidecar for a local file (par2-style; overhead `level` 5-50, default 15) |
+| `correct_verify` | Verify a local file against its `.aerocorrect` sidecar (read-only) |
+| `correct_repair` | Repair a corrupted local file in place from its sidecar (atomic, all-or-nothing, fail-closed re-verify) |
 
 ### Rate Limits
 
