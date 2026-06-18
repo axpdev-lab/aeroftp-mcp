@@ -2,6 +2,18 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.3.1] - 2026-06-18
+
+### Documents the `expect_sha256` authenticity anchor on `correct_repair`
+
+Thin registration wrapper, no source changes. The `aeroftp_correct_repair` tool exposed by the AeroFTP CLI gains an optional `expect_sha256` argument:
+
+- **`aeroftp_correct_repair` `expect_sha256`**: an out-of-band authenticity anchor. A bare repair reconstructs toward whatever content hash the sidecar declares (integrity, not authenticity), so a planted same-length sidecar could drive the repair to attacker content. With `expect_sha256` set, the repair refuses a sidecar declaring a different hash before any byte is written. The vault and AeroSync paths were already higher-layer-authenticated.
+
+Surfaced by the AeroVault dual blind security audit (finding M3). Tool count unchanged at 45.
+
+Requires AeroFTP CLI v4.0.7 or later for the `expect_sha256` anchor (v4.0.5+ for the rest of the error-correction tools).
+
 ## [1.3.0] - 2026-06-16
 
 ### Adds error-correction tools (.aerocorrect sidecars)
