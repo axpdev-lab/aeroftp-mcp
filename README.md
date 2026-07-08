@@ -87,7 +87,7 @@ Existing MCP servers in each config file are preserved. The MCP server communica
 
 ## Available MCP Tools
 
-Once configured, your AI assistant gains access to 45 tools. The remote file and transfer tools each ship with a matching `remote_*` alias for cross-profile callers; the three `correct_*` error-correction tools operate on local files and have no alias.
+Once configured, your AI assistant gains access to 73 tools in total. The tables below document the primary operations by safety tier; each remote file and transfer tool is additionally exposed under a matching `remote_*` alias (and a few under `server_*`) for cross-profile callers, which brings the advertised total to 73. The three `correct_*` error-correction tools operate on local files and have no alias.
 
 ### Safe (read-only)
 
