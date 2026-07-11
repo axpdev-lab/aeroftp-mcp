@@ -2,6 +2,18 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.4.0] - 2026-07-11
+
+### Adds S3 trash / version management tools and a delete dry-run (AeroFTP CLI v4.1.3)
+
+Thin registration wrapper, no source changes. AeroFTP CLI v4.1.3 extends the MCP surface:
+
+- **`remote_versions`**: list, download, and restore (server-side copy-forward) prior versions of an object on a versioned S3-family bucket, and purge a single version.
+- **`remote_trash`**: browse bucket-wide soft-deleted objects and delete markers under a prefix, undelete (drop a delete marker), and empty the trash with a dry-run preview. The live current version is never swept.
+- **`aeroftp_delete` / `aeroftp_delete_many` `dry_run`**: preview exactly which files and directories a delete would remove plus the bytes reclaimed, deleting nothing, so an agent can diff a preview against the real run (returns `deleted:false`, `would_delete:true`, and the byte total). Recursion is now opt-in through `recursive`, whose default refuses rather than silently erasing a subtree.
+
+Requires AeroFTP CLI v4.1.3 or later for the S3 trash/version tools and the delete dry-run.
+
 ## [1.3.1] - 2026-06-18
 
 ### Documents the `expect_sha256` authenticity anchor on `correct_repair`

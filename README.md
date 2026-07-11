@@ -87,7 +87,7 @@ Existing MCP servers in each config file are preserved. The MCP server communica
 
 ## Available MCP Tools
 
-Once configured, your AI assistant gains access to 73 tools in total. The tables below document the primary operations by safety tier; each remote file and transfer tool is additionally exposed under a matching `remote_*` alias (and a few under `server_*`) for cross-profile callers, which brings the advertised total to 73. The three `correct_*` error-correction tools operate on local files and have no alias.
+Once configured, your AI assistant gains access to 75 tools in total. The tables below document the primary operations by safety tier; each remote file and transfer tool is additionally exposed under a matching `remote_*` alias (and a few under `server_*`) for cross-profile callers, which brings the advertised total to 75. The three `correct_*` error-correction tools operate on local files and have no alias.
 
 ### Safe (read-only)
 
@@ -128,9 +128,11 @@ Once configured, your AI assistant gains access to 73 tools in total. The tables
 
 | Tool | Description |
 |------|-------------|
-| `delete` | Delete a single remote file or directory |
-| `delete_many` | Batch delete (caps + configurable backoff) |
+| `delete` | Delete a single remote file or directory (`dry_run` previews the exact files, dirs and bytes and deletes nothing; `recursive` is opt-in and refuses rather than silently erasing a subtree) |
+| `delete_many` | Batch delete (`dry_run` preview; caps + configurable backoff) |
 | `cleanup` | Sweep orphan `.aerotmp` files (dry-run by default) |
+| `remote_versions` | Versioned S3-family only: list, download, restore (server-side copy-forward) and purge a single prior version of an object |
+| `remote_trash` | Versioned S3-family only: browse bucket-wide soft-deleted objects and delete markers under a prefix, undelete (drop a delete marker), and empty the trash with a dry-run preview (never sweeps the live current version) |
 
 ### Error correction (local `.aerocorrect` sidecars)
 
