@@ -2,6 +2,19 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.5.0] - 2026-08-26
+
+### Advertises the real tool surface, and adds transfer telemetry
+
+Thin registration wrapper, no source changes.
+
+- **`transfer_stats`** (new, AeroFTP v4.1.6+): returns the engine-level telemetry of the most recent DAG-engine transfer job seen by the process. Logical, wire and local-payload byte triple, retries, dispatch wait and runner nanos, concurrency high-water, time to first byte, real wall clock, and the CPU, RSS and file-descriptor delta bracketing the job. Read-only, no arguments, no external I/O, and it answers `available:false` when no such job has run. One limitation is stated on purpose, because an agent would otherwise read silence as zero: this server's own `transfer` and `transfer_tree` take the direct cross-profile path and do NOT run the DAG engine, so they are never counted here. The figures come from GUI or CLI folder and sync transfers in the same process.
+- **`edit`** (AeroFTP v4.1.4+, documented properly here for the first time): find-and-replace on a remote UTF-8 text file without downloading it, all occurrences by default or only the first with `first=true`. Bounded to a 10 MB streamed read rather than a large read that is then truncated, and written back temp-then-rename so a failed transfer never leaves the target half-written. The row had been a six-word line that named neither guarantee.
+
+The count is the other half of this release. The description advertised 45 and the README 75, two conventions for one surface, both counted by hand and both behind. The real figure is 77: 39 primary tools plus 38 `remote_*` and `server_*` aliases. It is now stated once, and the README says where it comes from: `mcp_tools_total` in `docs/COMMAND-INVENTORY.json` in the AeroFTP repository, generated from the binary, which a CI gate started checking for drift in v4.1.8. The advertised number had lagged for several app releases because nothing tied the two together, which is the same shape as a snapshot nobody regenerates and a gate nobody runs.
+
+The AeroFTP badge moves from v4.0.5+ to v4.1.6+, the minimum that ships the full advertised surface. Individual tools keep their own floors, noted per row: v4.1.6 for `transfer_stats`, v4.1.4 for `edit`, v4.0.5 for the error-correction tools, v4.0.0 for the rest.
+
 ## [1.4.0] - 2026-07-11
 
 ### Adds S3 trash / version management tools and a delete dry-run (AeroFTP CLI v4.1.3)
