@@ -2,6 +2,20 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.6.0] - 2026-09-21
+
+### Bounded answers: the compare and sync tools say what they did not look at (AeroFTP CLI v4.2.0)
+
+Thin registration wrapper, no source changes. The surface below comes from the CLI; the count is unchanged at 77 tools, 39 primary plus 38 `remote_*` and `server_*` aliases, and it still comes from `mcp_tools_total` in `docs/COMMAND-INVENTORY.json` in the AeroFTP repository, generated from the binary.
+
+- **`check_tree` and `sync_tree` report the part of the tree they could not read.** `local_scan_incomplete` and `remote_scan_incomplete` arrive with `{side}_scan_errors` (directory listings that failed) and `{side}_scan_truncated` (the walk stopped at its depth or entry cap). A side is now reported incomplete not only when a listing failed but when the walk left out a path it can name, because a symbolic link is a gap without being a failure: no walk follows one, so the subtree behind it was never compared. Those paths come back in `{side}_skipped_links` and `{side}_unseen_paths`, each capped at 1000 entries with `_total` and `_truncated` alongside, and omitted entirely when empty. The six counter keys are always present, zero included, so an agent can branch on them without first checking whether they exist.
+- **The reason this matters to an agent, stated in the tool description itself:** a file reported as missing on one side by an incomplete scan may simply be unread rather than absent. Turning it into a delete is exactly the defect this release closed in the application, where a local file replaced by a symbolic link was read as a user deletion and its remote twin was removed.
+- **`list_servers` always emits `cryptOverlay` and `protocolClass`**, with `cryptOverlay` null when the profile carries no binding. A key that appears only when it has something to say cannot be told apart from a surface that forgot to answer, so the shape is now identical for an encrypted and an unencrypted profile.
+- **`reconcile` gains a checksum path** that catches two files of equal size whose content differs, which a size-only diff reports as a match.
+- **The connection pool opens seven more providers natively**: Immich, ImageKit, Uploadcare, Cloudinary, Filen, Koofr and B2.
+
+The AeroFTP badge moves from v4.1.6+ to v4.2.0+, the minimum that ships the surface advertised here. Individual tools keep their own floors, noted per row.
+
 ## [1.5.0] - 2026-08-26
 
 ### Advertises the real tool surface, and adds transfer telemetry
