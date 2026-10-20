@@ -2,9 +2,9 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.2.0%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.2.4%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
-Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **77 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
+Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **78 file management tools** across **22 protocols**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
 Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, provider-agnostic DAG scheduler that picks the right transfer shape per call from the provider's capabilities: native multipart upload fan-out on S3 / B2, server-side copy on every backend that supports it, and intra-file segmented downloads when the server proves it honours HTTP `Range`. The MCP tool surface is unchanged (same names, same arguments, same notifications); progress events are now sourced from the engine's per-node lifecycle. See the [architecture page](https://docs.aeroftp.app/architecture/dag-transfer-engine) for details.
 
@@ -87,7 +87,7 @@ Existing MCP servers in each config file are preserved. The MCP server communica
 
 ## Available MCP Tools
 
-Once configured, your AI assistant gains access to 77 tools in total: 39 primary tools plus 38 `remote_*` and `server_*` aliases for cross-profile callers. The tables below document the primary operations by safety tier. The three `correct_*` error-correction tools operate on local files and have no alias.
+Once configured, your AI assistant gains access to 78 tools in total: 40 primary tools plus 38 `remote_*` and `server_*` aliases for cross-profile callers. The tables below document the primary operations by safety tier. The three `correct_*` error-correction tools operate on local files and have no alias.
 
 That figure is generated from the binary rather than counted by hand: it is the `mcp_tools_total` recorded in [`docs/COMMAND-INVENTORY.json`](https://github.com/axpdev-lab/aeroftp/blob/main/docs/COMMAND-INVENTORY.json), which a CI gate checks for drift on every push. It had lagged the real surface for several app releases because nothing tied the two together.
 
@@ -117,9 +117,10 @@ That figure is generated from the binary rather than counted by hand: it is the 
 
 | Tool | Description |
 |------|-------------|
+| `aeroftp_profile_auth` | Configure, begin, finish, inspect or cancel authorization for a saved OAuth or GitHub profile. Returns public authorization URLs/device codes; tokens, PEMs and pending secrets stay encrypted in the vault (AeroFTP v4.2.4+) |
 | `upload_file` / `upload_many` | Upload single or multiple files (`create_parents` recursive mkdir) |
 | `download_file` | Download with progress stream |
-| `transfer` / `transfer_tree` | Cross-profile copy (single file or recursive tree, dry-run + skip_existing) |
+| `transfer` / `transfer_tree` | Cross-profile copy through saved authentication and crypt overlays, including empty directories, dry-run and `skip_existing` with the one-way timestamp rule and size fallback (AeroFTP v4.2.4+) |
 | `create_directory` | Create a remote directory (recursive `parents`) |
 | `rename` | Rename/move a file or directory |
 | `edit` | Find-and-replace on a remote UTF-8 text file without downloading it: all occurrences by default, or only the first with `first=true`. Bounded to a 10 MB streamed read, and written back temp-then-rename so a failed transfer never leaves the target half-written (AeroFTP v4.1.4+) |

@@ -2,6 +2,17 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.6.1] - 2026-10-20
+
+### Saved-profile authorization and cross-profile transfers (AeroFTP CLI v4.2.4)
+
+Thin registration wrapper, no extension source changes. The catalog now contains 78 tools, 40 primary operations plus 38 aliases, verified against the CLI tools/list response and the generated command inventory.
+
+- **`aeroftp_profile_auth`** configures and authorizes supported saved OAuth and GitHub profiles through configure/begin/finish/status/cancel actions. Authorization URLs and device codes are public; tokens, PEMs, PKCE and pending request secrets stay encrypted in the vault.
+- **`transfer` and `transfer_tree`** reuse saved authentication and crypt overlays, preserve empty directories, and skip equal-size destinations using the one-way timestamp rule with a size fallback for unavailable or incomparable times. Connection and overlay recovery retain the captured profile owner across remote awaits.
+- **Advertised CLI floor:** the badge moves to 4.2.4+, which ships the complete advertised surface. Older tools retain their previous per-feature requirements.
+- **Lockfile metadata** is aligned with the extension version; dependencies are unchanged.
+
 ## [1.6.0] - 2026-09-21
 
 ### Bounded answers: the compare and sync tools say what they did not look at (AeroFTP CLI v4.2.0)
