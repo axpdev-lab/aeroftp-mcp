@@ -2,6 +2,17 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.6.2] - 2026-11-05
+
+### SCP capabilities and recursive path safety (AeroFTP CLI v4.2.6)
+
+Thin registration wrapper, no extension source changes. The CLI surface remains 78 tools, 40 primary operations plus 38 aliases, verified against the generated command inventory.
+
+- **SCP capabilities:** saved SCP profiles are supported and advertised by the server; SFTP can fall back on the same SSH connection when the server lacks SFTP. Capability output retains SCP-specific restrictions.
+- **Recursive sync path policy:** descendants inherit sensitive-path checks and refused prefixes protect both counterparts from orphan deletion. Refusals remain visible in scan reports.
+- **Transfer reliability:** safe retries remain owned by each provider, uncertain cloud writes are not blindly replayed, completed downloads can verify usable published hashes, and exact filenames retain their identity.
+- **Advertised CLI floor:** 4.2.6+ supplies this complete advertised behavior. Existing tool names, arguments and extension dependencies are unchanged.
+
 ## [1.6.1] - 2026-10-20
 
 ### Saved-profile authorization and cross-profile transfers (AeroFTP CLI v4.2.4)
