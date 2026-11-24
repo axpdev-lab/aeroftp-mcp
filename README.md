@@ -2,7 +2,7 @@
 
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/axpdev-lab.aeroftp-mcp.svg?label=VS%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=axpdev-lab.aeroftp-mcp)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.2.6%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
+[![AeroFTP](https://img.shields.io/badge/AeroFTP-v4.2.8%2B-0ea5e9)](https://github.com/axpdev-lab/aeroftp)
 
 Configure the [AeroFTP](https://aeroftp.app) MCP server for **Claude Code**, **Claude Desktop**, **Cursor**, and **Windsurf** with one click. Gives your AI assistant access to **78 file management tools** across **8 transport protocols and 26 native cloud integrations**, with real-time progress notifications during uploads, downloads, and tree-level sync.
 
@@ -12,7 +12,7 @@ Starting with AeroFTP **v4.0.0** the underlying transfer engine is a shared, pro
 
 SCP is available as a saved-profile protocol, and an SFTP connection can continue over SCP when the server has no SFTP subsystem. Capability responses describe the selected transport; SCP has its own limits and does not imply SFTP feature parity.
 
-Recursive MCP sync applies sensitive-path policy to descendants and preserves refused subtrees on both sides instead of treating them as deletion candidates. Cloud upload providers own their safe retry budget, avoiding whole-file replay after an uncertain server outcome. Tool names and argument counts are unchanged: **78 tools, 40 primary plus 38 aliases**.
+A dead transport drops the pooled session and the call is not replayed. Recursive MCP sync applies sensitive-path policy to descendants and preserves refused subtrees on both sides instead of treating them as deletion candidates. Cloud upload providers own their safe retry budget, avoiding whole-file replay after an uncertain server outcome. Tool names and argument counts are unchanged: **78 tools, 40 primary plus 38 aliases**.
 
 ## Features
 

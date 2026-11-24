@@ -2,6 +2,15 @@
 
 All notable changes to the AeroFTP MCP Server extension will be documented in this file.
 
+## [1.6.3] - 2026-11-24
+
+### A dead transport drops the pooled session (AeroFTP CLI v4.2.8)
+
+Thin registration wrapper, no extension source changes. The CLI surface remains 78 tools, 40 primary operations plus 38 aliases, verified against `mcp_tools_total` in the AeroFTP 4.2.8 command inventory.
+
+- **Pooled sessions:** a listing whose typed error is a dead transport drops that pooled session after the call and does not scan again. A not-found result, a permission error, and a listing timeout keep the session.
+- **Advertised CLI floor:** 4.2.8+ supplies this behavior. Existing tool names, arguments and the tool count are unchanged.
+
 ## [1.6.2] - 2026-11-05
 
 ### SCP capabilities and recursive path safety (AeroFTP CLI v4.2.6)
